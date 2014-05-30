@@ -1,0 +1,10 @@
+{
+	"name": "magic-tool",
+	"description": "Search for Magic cards more conveniently",
+	"version": "0.0.1",
+	"private": true,
+	"dependencies": {
+		"express": "4.*"
+	}
+}
+
