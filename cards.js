@@ -60,7 +60,7 @@ exports.findByName = function (req, res) {
 			{ text: { $regex: req.params.pattern, $options: 'is' } }
 			]
 		}
-	).limit(100).toArray(function (err, results) {
+	).limit(20).toArray(function (err, results) {
 		res.send(results);
 	});
 };
