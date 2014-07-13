@@ -3,14 +3,18 @@ module.exports = function(grunt) {
   grunt.initConfig({
     sass: {
       dist: {
-        files: {
-          'public/css/style.css' : 'scss/style.scss'
-        }
+        files: [{
+          expand: true,
+          cwd: 'scss',
+          src: ['*.scss'],
+          dest: 'public/css',
+          ext: '.css'
+        }]
       }
     },
     watch: {
       source: {
-        files: ['sass/*.scss'],
+        files: ['scss/*.scss'],
         tasks: ['sass'],
         options: {
           livereload: true,
@@ -19,7 +23,8 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.loadNpmTasks('grunt-contrib-sass');
   grunt.registerTask('default', ['sass']);
+  grunt.loadNpmTasks('grunt-contrib-sass');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
 };

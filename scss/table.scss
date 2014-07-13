@@ -1,0 +1,27 @@
+$table-background-color: #fff;
+$table-border-color: #ccc;
+
+$table-head-background-color: darken($table-background-color, 13);
+
+table {
+	background: $table-background-color;
+	border: 1px solid $table-border-color;
+	empty-cells: show;
+
+	th, td {
+		white-space: nowrap;
+		border-left: 1px solid $table-border-color;
+		padding: 0.7ex 1em;
+	}
+
+	thead {
+		background: $table-head-background-color;
+	}
+}
+
+@mixin table-striped() {
+	& tr:nth-child(even) {
+		background: darken($table-background-color, 5);
+	}
+}
+

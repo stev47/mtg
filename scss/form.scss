@@ -1,0 +1,50 @@
+@import 'grid';
+
+label {
+	@include row();
+	b {
+		@include column(1, 2);
+		white-space: nowrap;
+		text-align: right;
+		&:after {
+			content: ":";
+		}
+	}
+	span {
+		@include column(1, 2);
+	}
+}
+
+form {
+	@include row();
+}
+
+@mixin button-left() {
+	border-radius: 2px 0 0 2px;
+}
+@mixin button-right() {
+	border-radius: 0 2px 2px 0;
+	/*border-right: 0;*/
+}
+@mixin button-center() {
+	/*border-right: 1px solid #ccc;*/
+}
+@mixin button-active() {
+	box-shadow:	0 0 0 1px rgba(0, 0, 0, 0.15) inset, 0 0 6px rgba(0, 0, 0, 0.2) inset;
+}
+
+button {
+	border: 0;
+	background-color: #dedede;
+	padding: 0.8em 1.4em;
+	text-decoration: none;
+	&:hover {
+		background-image: linear-gradient(transparent, rgba(0,0,0,.05), rgba(0,0,0,.1));
+	}
+	/*&:active {
+		@include button-active();
+	}*/
+}
+
+
+

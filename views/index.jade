@@ -1,8 +1,11 @@
 extends layout
 
 block body
-	input(type='text' name='regex')
-	div#result
+	div#container
+		div#lpanel
+			div#search
+				include searchform
+		div#result
 
 
 

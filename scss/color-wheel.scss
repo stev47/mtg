@@ -1,0 +1,63 @@
+@mixin color-circle($color) {
+	background: $color;
+	&:hover {
+		box-shadow: 0px 0px 4px 0px #000;
+	}
+}
+
+@mixin color-wheel($size) {
+	$circle-size: $size * 0.27;
+	$wheel-radius: ($size - $circle-size) / 2;
+	$border-width: $size / 66;
+
+	position: relative;
+	width: $size;
+	height: $size;
+	//border: 3px solid black;
+	//border-radius: 100%;
+	padding: 0 $wheel-radius;
+
+	> * {
+		appearance: none;
+		-webkit-appearance: none;
+
+		position: absolute;
+		display: block;
+		box-sizing: border-box;
+
+		//top: 0px;
+		//left: ($size / 2) - ($circle-size / 2);
+		width: $circle-size;
+		height: $circle-size;
+		border: $border-width solid black;
+		border-radius: 100%;
+
+		-webkit-transform-origin: 50% ($size / 2);
+
+		outline: none;
+		&:checked {
+			border-radius: 20%;
+		}
+	}
+	> .white {
+		@include color-circle(rgb(255, 255, 223));
+		-webkit-transform: rotate(0deg);
+	}
+	> .blue {
+		@include color-circle(rgb(63, 63, 255));
+		-webkit-transform: rotate(72deg);
+	}
+	> .black {
+		@include color-circle(rgb(63, 63, 63));
+		-webkit-transform: rotate(144deg);
+	}
+	> .red {
+		@include color-circle(rgb(224, 31, 31));
+		-webkit-transform: rotate(216deg);
+	}
+	> .green {
+		@include color-circle(rgb(63, 185, 63));
+		-webkit-transform: rotate(288deg);
+	}
+
+}

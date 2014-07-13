@@ -1,0 +1,130 @@
+@import 'grid';
+@import 'normalize';
+@import 'form';
+@import 'table';
+
+$total-width: 1000px;
+
+h1, h2, h3, h4, h5, h6 {
+	color: #111;
+}
+
+body {
+	font-size: 85%;
+}
+
+
+
+/* Layout */
+
+#container {
+	width: $total-width;
+	margin: 0 auto;
+	overflow: hidden;
+
+
+	header {
+		@include column(12, 12);
+	}
+	nav {
+		@include column(3, 12);
+	}
+	#main {
+		@include column(9, 12);
+	}
+}
+
+/* Menu */
+
+nav li {
+	&.head {
+		font-size: 90%;
+		border-bottom: 1px solid #ddd;
+		text-transform: uppercase;
+		padding: 5px 20px;
+		line-height: 1.5em;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	a {
+		display: block;
+		padding: 5px 20px;
+		line-height: 1.5em;
+		color: #777;
+		text-decoration: none;
+		white-space: nowrap;
+		&:hover {
+			background-color: #eee;
+		}
+	}
+}
+
+nav ol {
+	list-style: none;
+	border: 1px solid #ccc;
+	padding: 0;
+	margin: 0;
+}
+
+img#overview {
+	width: 100%;
+}
+
+#imports, #import {
+	width: 100%;
+	text-align: center;
+	@include table-striped();
+}
+
+#imports_wrapper {
+	@include row();
+	#imports_length {
+		@include column(1,2);
+	}
+	#imports_filter {
+		@include column(1,2);
+		text-align: right;
+		padding-right: 0;
+	}
+	.table {
+		@include column(1,1);
+		padding: 10px 0;
+	}
+	#imports_info {
+		@include column(1,2);
+	}
+	#imports_paginate {
+		@include column(1,2);
+		text-align: right;
+		padding-right: 0;
+	}
+}
+
+#imports tr td:nth-last-child(1):not(.dataTables_empty), #import td:nth-last-child(1):not(.dataTables_empty) {
+	padding: 0;
+	text-align: center;
+	& a, & button {
+		@extend button;
+		padding: .7ex 0.7em;
+		display: block;
+		width: 100%;
+	}
+}
+
+
+
+.paginate_button {
+	@extend button;
+	display: inline-block;
+	@include button-center();
+}
+.paginate_button.previous {
+	@include button-left();
+}
+.paginate_button.next {
+	@include button-right();
+}
+.paginate_button.current {
+	@include button-active();
+}
+
