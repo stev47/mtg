@@ -172,3 +172,92 @@ exports.preprocess.nestDoubleFaced = function () {
 
 	return deferred.promise;
 }
+
+exports.preprocess.types = function () {
+	var deferred = Q.defer();
+
+	db.dropCollection('supertypes');
+	db.dropCollection('types');
+	db.dropCollection('subtypes');
+
+	var reduce = function (key, values) {
+		return values.reduce(function (a, b) {
+			var obj = {};
+
+			for (var i in a) {
+				obj[a[i]] = a[i];
+			}
+			for (var i in b) {
+				obj[b[i]] = b[i];
+			}
+			return obj;
+		})
+	}
+
+	db.collection('cardsNameReduced').mapReduce(
+		function () { emit(0, this.supertypes) },
+		reduce,
+		{
+			out: "inline"
+		}, function (err, result) {
+			if (err) throw err;
+
+			result.find().toArray( function (err, cards) {
+				var promises = [];
+				for (var i in cards[0].value) {
+					promises.push(Q.ninvoke(db.collection('supertypes'), 'insert', {
+						name: cards[0].value[i]
+					}));
+				}
+				Q.all(promises).then(function () {
+					console.log('Finding supertypes ... finished');
+				}).done(deferred.resolve);
+			});
+		}
+	);
+
+	db.collection('cardsNameReduced').mapReduce(
+		function () { emit(0, this.types) },
+		reduce,
+		{
+			out: "inline"
+		}, function (err, result) {
+			if (err) throw err;
+
+			result.find().toArray( function (err, cards) {
+				var promises = [];
+				for (var i in cards[0].value) {
+					promises.push(Q.ninvoke(db.collection('types'), 'insert', {
+						name: cards[0].value[i]
+					}));
+				}
+				Q.all(promises).then(function () {
+					console.log('Finding types ... finished');
+				}).done(deferred.resolve);
+			});
+		}
+	);
+
+	db.collection('cardsNameReduced').mapReduce(
+		function () { emit(0, this.subtypes) },
+		reduce,
+		{
+			out: "inline"
+		}, function (err, result) {
+			if (err) throw err;
+
+			result.find().toArray( function (err, cards) {
+				var promises = [];
+				for (var i in cards[0].value) {
+					promises.push(Q.ninvoke(db.collection('subtypes'), 'insert', {
+						name: cards[0].value[i]
+					}));
+				}
+				Q.all(promises).then(function () {
+					console.log('Finding subtypes ... finished');
+				}).done(deferred.resolve);
+			});
+		}
+	);
+	return deferred.promise;
+}

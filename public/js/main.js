@@ -69,6 +69,8 @@ function show_result() {
 				.appendTo(card_view_el)
 		}
 
+		//
+
 		// toggle-event
 		card_el.on('contextmenu', function (e) { return false });
 		card_el.on('mouseup', function (e) {
@@ -86,11 +88,14 @@ function show_result() {
 
 $(function () {
 	$('#search form').submit(function () { return false });
-
 	$('#search form').on('change', query);
-	$('#wheel i').click(function () {
-		$(this).toggleClass('checked');
-	});
+
+	$.getJSON('types', function (data) {
+		var types_el = $('select[name=type]');
+		$.each(data, function (i, v) {
+			$('<option>').text(v.name).appendTo(types_el);
+		});
+	})
 
 	query();
 })

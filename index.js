@@ -44,8 +44,14 @@ app.get('/preprocess/nestDoubleFaced', function (req, res) {
 		res.send('finished!');
 	})
 })
+app.get('/preprocess/types', function (req, res) {
+	admin.preprocess.types().then(function () {
+		res.send('finished!');
+	})
+})
 
 app.post('/query', cards.findByName);
 
+app.get('/types', cards.types);
 
 app.listen(3000);

@@ -19,6 +19,18 @@ exports.import = function (req, res) {
 		});
 };
 
+exports.types = function (req, res) {
+	var col = db.collection('types');
+
+	col = col.find();
+	col = col.sort({name: 1});
+
+	col.toArray(function (err, results) {
+		if (err) throw err;
+		res.send(results);
+	});
+}
+
 exports.findAll = function (req, res) {
 	res.send('Alle');
 };
@@ -38,6 +50,8 @@ exports.findByName = function (req, res) {
 		query.name = { $regex: qparams.name, $options: 'i' };
 	if (qparams.text)
 		query.text = { $regex: qparams.text, $options: 'i' };
+	if (qparams.type)
+		query.types = qparams.type;
 
 	qcolors = [];
 	['white', 'blue', 'black', 'red', 'green'].forEach(function (color) {
@@ -48,13 +62,6 @@ exports.findByName = function (req, res) {
 	if (qcolors.length > 0) {
 		query.colors = { $all : qcolors };
 	}
-
-	/*
-		query.$or = [
-			{ name: { $regex: pattern, $options: 'i' } },
-			{ text: { $regex: pattern, $options: 'is' } }
-		];
-*/
 
 	/* Query Execution */
 	col = col.find(query);

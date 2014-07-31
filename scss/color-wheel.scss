@@ -13,9 +13,7 @@
 	position: relative;
 	width: $size;
 	height: $size;
-	//border: 3px solid black;
-	//border-radius: 100%;
-	padding: 0 $wheel-radius;
+	padding: 0 $wheel-radius; // horizontal centering of inner circles
 
 	> * {
 		appearance: none;
@@ -25,8 +23,6 @@
 		display: block;
 		box-sizing: border-box;
 
-		//top: 0px;
-		//left: ($size / 2) - ($circle-size / 2);
 		width: $circle-size;
 		height: $circle-size;
 		border: $border-width solid black;
@@ -36,7 +32,7 @@
 
 		outline: none;
 		&:checked {
-			border-radius: 20%;
+			border-radius: 10%;
 		}
 	}
 	> .white {
