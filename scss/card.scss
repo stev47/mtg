@@ -1,67 +1,3 @@
-@import 'form';
-@import 'color-wheel';
-
-
-$lpanel-width: 20%;
-$card-width: 63mm;
-$card-height: 88mm;
-$card-border: 2mm;
-
-$card-ratio: $card-width / $card-height;
-$card-view-width: $card-width / (2 * $card-border);
-$card-view-height: $card-height / (2 * $card-border);
-$card-border-width: #{(3mm / $card-width) * 100}#{"%"};
-$card-border-height: #{(3mm / $card-height) * 100}#{"%"};
-$card-border-radius-width: #{(1.8mm / $card-width) * 100}#{"%"};
-$card-border-radius-height: #{(1.8mm / $card-height) * 100}#{"%"};
-
-
-div#container {
-	display: table;
-	height: 100%;
-	width: 100%;
-	overflow: scroll;
-	div {
-		display: table-cell;
-		vertical-align: top;
-	}
-	#result-pad {
-		width: $lpanel-width;
-		min-width: 200px;
-	}
-	#result {
-		padding-left: 6px;
-	}
-}
-#lpanel {
-	position: fixed;
-	top: 0;
-	left: 0;
-	height: 100%;
-	width: $lpanel-width;
-	min-width: 200px;
-
-	background: #eee;
-	box-shadow: inset -50px 0px 50px -30px #999;
-}
-div#search {
-	padding: 1em;
-
-	//height: 100%;
-	input[type='text'] {
-		width: 100%;
-	}
-}
-div#wheel {
-	@include color-wheel(100px);
-	margin: 5px;
-	> i:hover {
-		box-shadow: 0px 0px 2px 1px #000;
-	}
-}
-
-
-
 .card-view {
 	position: absolute;
 	top: 0;
@@ -125,19 +61,6 @@ div#wheel {
 	}
 }
 
-div#result .card {
-	float: left;
-	width: 18vw;
-	height: 18vw / $card-ratio;
-
-	&:hover {
-		box-shadow:
-			0px 0px 0px 1px rgba(0, 0, 0, 1),
-			0px 0px 3px 2px rgba(120, 120, 120, 1);
-	}
-}
-
-
 /* Animation stuff */
 .card-view {
 	&, > img {
@@ -162,4 +85,3 @@ div#result .card {
 		&.back  { transform: rotateY( 180deg) }
 	}
 }
-

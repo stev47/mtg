@@ -1,0 +1,123 @@
+$lpanel-width: 20%;
+$card-width: 63mm;
+$card-height: 88mm;
+$card-border: 3mm;
+
+$card-ratio: $card-width / $card-height;
+$card-view-width: $card-width - (2 * $card-border);
+$card-view-height: $card-height - (2 * $card-border);
+$card-border-width: #{(3mm / $card-width) * 100}#{"%"};
+$card-border-height: #{(3mm / $card-height) * 100}#{"%"};
+$card-border-radius-width: #{(2.2mm / $card-width) * 100}#{"%"};
+$card-border-radius-height: #{(2.3mm / $card-height) * 100}#{"%"};
+
+@page {
+	size: 210mm 297mm;
+	margin: 16mm 10mm;
+}
+
+$mm-x: (1mm / 190mm) * 100%;
+$mm-y: (1mm / 265mm) * 100%;
+
+html, body {
+	width: 190mm;
+	height: 265mm;
+	margin: 0mm;
+	//padding: 5mm;
+}
+body {
+	//padding: (1.6 * $mm-x) (1.0 * $mm-y);
+}
+
+
+
+#test {
+	width: 20 * $mm-x;
+	height: 20 * $mm-y;
+	border: 2mm solid #000;
+}
+
+.card:nth-child(9) {
+	page-break-after: always;
+	//clear: both;
+}
+
+body {
+	background: white;
+	height: 100%;
+	width: 100%;
+
+	font-size: 0;
+
+	figure.card {
+		display: inline-block;
+		width: ($card-width / 1mm) * $mm-x;
+		height: ($card-height / 1mm) * $mm-y;
+		margin: 0;
+		//margin: (0.1 * $mm-y) (0.1 * $mm-x);
+	}
+}
+
+.card-view {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+
+	overflow: hidden;
+	border: $card-border solid #000;
+	border-radius: $card-border-radius-width / $card-border-radius-height;
+}
+
+.card > .card-view > img {
+	display: block;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+.loading {
+	visibility: hidden;
+}
+
+@mixin clip-borders ($img-width, $img-height, $top, $right, $bottom, $left, $fix: 0mm) {
+	// todo: simlify calculation
+	// calculate clip in mm
+	$top: (($top / $img-height) * $card-view-height) + $fix;
+	$right: (($right / $img-width) * $card-view-width) + $fix;
+	$bottom: (($bottom / $img-height) * $card-view-height) + $fix;
+	$left: (($left / $img-width) * $card-view-width) + $fix;
+
+	left: -($left / $card-view-width) * 100%;
+	top: -($top / $card-view-height) * 100%;
+	width: ($card-view-width / ($card-view-width - $left - $right)) * 100%;
+	height: ($card-view-height / ($card-view-height - $top - $bottom)) * 100%;
+}
+
+.card img.clip-border-1 { // 480x680 hq scans
+	@include clip-borders(480px, 680px, 10px, 10px, 10px, 10px, 0.07mm);
+}
+.card img.clip-border-2 { // 223x310 lq gatherer
+	@include clip-borders(223px, 310px, 12px, 12px, 13px, 11px, 0.0mm);
+}
+
+
+.card {
+	max-width: $card-width;
+	max-height: $card-height;
+
+	position: relative;
+	overflow: hidden;
+
+	background-color: #000;
+	color: #fff;
+	//margin: 0.1mm; //0.25mm;
+	border-radius: $card-border-radius-width / $card-border-radius-height;
+
+	.card-data {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+	}
+}

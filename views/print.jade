@@ -1,0 +1,28 @@
+doctype html
+html
+	head
+		title= pageTitle
+		link(rel='stylesheet', href="/css/print.css")
+		script(src="/js/jquery.js")
+		script.
+			function getImageUrl(card) {
+				return "http://mtgimage.com/card/" + encodeURIComponent(card.imageName) + "-hq.jpg";
+			}
+			function loadSuccess() {
+				var img = this;
+				if (img.naturalWidth == 480 && img.naturalHeight == 680) {
+					$(img).addClass("clip-border-1");
+				} else if (img.naturalWidth == 223 && img.naturalHeight == 310) {
+					$(img).addClass("clip-border-2");
+				}
+				$(img).removeClass('loading');
+			}
+
+			$(function () {
+				$('.card img').bind('load', loadSuccess)
+			});
+	body
+		- each card in cards
+			figure.card
+				div.card-view
+					img.front(src= card.src, alt= card.name)

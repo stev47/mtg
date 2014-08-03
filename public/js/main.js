@@ -52,10 +52,15 @@ function show_result() {
 		var card_front_el = $('<img>').appendTo(card_view_el);
 		var card_back_el = $('<img>');
 
+		card_front_el.load(loadSuccess).error(loadError);
+		card_back_el.load(loadSuccess).error(loadError);
+
 		// feed frontside
 		card_front_el
 			.data(card_data)
-			.attr('src', 'http://mtgimage.com/card/' + card_data.imageName + '.jpg')
+			.addClass('loading')
+			//.css('background-image', 'url(' + getImageUrl(card_data) + ')')
+			.attr('src', getImageUrl(card_data))
 			.attr('alt', card_data.name)
 			.addClass('front')
 
@@ -63,6 +68,7 @@ function show_result() {
 		if (card_data.layout == 'double-faced' && card_data.backside) {
 			card_back_el
 				.data(card_data.backside)
+				.addClass('loading')
 				.attr('src', 'http://mtgimage.com/card/' + card_data.backside.imageName + '.jpg')
 				.attr('alt', card_data.backside.name)
 				.addClass('back')
