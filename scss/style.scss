@@ -5,7 +5,7 @@
 $lpanel-width: 20%;
 $card-width: 63mm;
 $card-height: 88mm;
-$card-border: 2mm;
+$card-border: 1mm;
 
 $card-ratio: $card-width / $card-height;
 $card-view-width: $card-width / (2 * $card-border);
@@ -70,7 +70,7 @@ div#wheel {
 	right: 0;
 
 	overflow: hidden;
-	margin: $card-border;
+	margin: ($card-border / $card-width) * 100%;
 }
 
 .card > .card-view > img {
