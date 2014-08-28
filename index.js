@@ -74,7 +74,7 @@ app.get('/fetchDb', function (req, res) {
 	})
 });
 app.get('/loadDb', function (req, res) {
-	admin.fetchDb().then(function () {
+	admin.loadDb().then(function () {
 		res.send('finished!');
 	})
 });

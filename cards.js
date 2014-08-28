@@ -66,7 +66,8 @@ exports.findByName = function (req, res) {
 	/* Query Execution */
 	col = col.find(query);
 	col = col.limit(limit);
-	col = col.sort({releaseDate: -1});
+	//col = col.sort({releaseDate: -1});
+	col = col.sort({cmc: 1});
 
 	col.toArray(function (err, results) {
 		if (err) throw err;

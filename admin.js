@@ -19,6 +19,7 @@ exports.preprocess.all = function () {
 
 	exports.preprocess.reduceNames()
 		.then(exports.preprocess.nestDoubleFaced)
+		.then(exports.preprocess.types)
 		.then(function () {
 			deferred.resolve();
 		});
@@ -52,6 +53,7 @@ exports.fetchDb = function () {
 		});
 
 		writer.on('finish', function () {
+			fs.unlinkSync("data/cards.json.zip");
 			deferred.resolve();
 		});
 	});
