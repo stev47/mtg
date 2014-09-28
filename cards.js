@@ -41,7 +41,7 @@ exports.findByName = function (req, res) {
 	var qparams = req.body;
 	var query = {};
 
-	var col = db.collection('cardsNameReduced');
+	var col = db.collection('cards');
 
 	/* Query Building */
 	query.layout = { $nin : ['scheme', 'phenomenom', 'vanguard', 'plane'] };

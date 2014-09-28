@@ -54,7 +54,7 @@ app.get('/print/*', function (req, res) {
 		console.log(card_names);
 
 		return Q.all(card_names.map(function (card_name) {
-			return Q.ninvoke(db.collection('cardsNameReduced'), 'findOne', {name: card_name});
+			return Q.ninvoke(db.collection('cards'), 'findOne', {name: card_name});
 		})).then(function (cards) {
 			var cards = cards.map(function (card) {
 				card.src = getImageUrl(card);
@@ -65,7 +65,7 @@ app.get('/print/*', function (req, res) {
 
 	});
 });
-
+/*
 app.get('/import', admin.import);
 
 app.get('/fetchDb', function (req, res) {
@@ -93,7 +93,7 @@ app.get('/preprocess/types', function (req, res) {
 		res.send('finished!');
 	})
 })
-
+*/
 app.post('/query', cards.findByName);
 
 app.get('/types', cards.types);

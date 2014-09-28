@@ -2,10 +2,27 @@ var mongoskin = require('mongoskin');
 var db = new mongoskin.db('mongodb://localhost:27017/mtg', {w : 0});
 
 var Q = require('q');
+var fs = require('fs'),
+    http = require('http'),
+    unzip = require('unzip');
 
-var fs = require('fs');
-var http = require('http');
-var unzip = require('unzip');
+var argv = require('yargs')
+        .argv;
+
+
+Q.nbind = function (fn, thisp) {
+    var fnArgs = Array.prototype.slice.call(arguments).slice(2);
+    return function () {
+        var deferred = Q.defer();
+        fnArgs.push(deferred.makeNodeResolver());
+        try {
+            fn.apply(thisp, fnArgs)
+        } catch (e) {
+            deferred.reject(e);
+        }
+        return deferred.promise;
+    }
+}
 
 exports.import = function (req, res) {
 	exports.fetchDb()
@@ -15,16 +32,9 @@ exports.import = function (req, res) {
 
 exports.preprocess = {};
 exports.preprocess.all = function () {
-	var deferred = Q.defer();
-
-	exports.preprocess.reduceNames()
-		.then(exports.preprocess.nestDoubleFaced)
-		.then(exports.preprocess.types)
-		.then(function () {
-			deferred.resolve();
-		});
-
-	return deferred.promise;
+	return exports.preprocess.reduceNames()
+		.then(exports.preprocess.nestDoubleFaced);
+		.then(exports.preprocess.types);
 }
 
 exports.download = function (url, dest, cb) {
@@ -41,6 +51,7 @@ exports.fetchDb = function () {
 	// todo
 	var deferred = Q.defer();
 
+	console.log('Fetching json …');
 	exports.download("http://mtgjson.com/json/AllSets-x.json.zip", "data/cards.json.zip", function () {
 		var reader = fs.createReadStream("data/cards.json.zip");
 		var writer = fs.createWriteStream("data/cards.json");
@@ -54,6 +65,7 @@ exports.fetchDb = function () {
 
 		writer.on('finish', function () {
 			fs.unlinkSync("data/cards.json.zip");
+			console.log('Fetching json … finished');
 			deferred.resolve();
 		});
 	});
@@ -65,54 +77,37 @@ exports.loadDb = function () {
 	var deferred = Q.defer();
 
 	var extend = require('util')._extend;
+	console.log('Loading json …')
 	var sets = require('./data/cards.json');
 
-	db.collection('sets', {strict: true}, function (err, collection) {
 
-		db.dropCollection('sets');
-		db.dropCollection('cards');
+	return Q.all(Object.keys(sets).map(function (setname) {
+		var set = extend({}, sets[setname]);
+		delete set.cards;
+		var cards = sets[setname].cards;
 
-		var promises_sets = [];
-
-		for (var setname in sets) {
-			var deferred_set = Q.defer();
-			promises_sets.push(deferred_set.promise);
-
-			var set = extend({}, sets[setname]);
-			delete set.cards;
-			var cards = sets[setname].cards;
-
-			(function (set, cards, deferred_set) {
-				db.collection('sets').insert(set, function (err, cardset) {
-					var promises = [];
-					for (var i in cards) {
-						var card = cards[i];
-						card.releaseDate = set.releaseDate;
-						promises.push(Q.ninvoke(db.collection('cards'), 'insert', card));
-					}
-					Q.all(promises).then(function () {
-						console.log('Imported set ' + set.name);
-					}).done(deferred_set.resolve);
-				});
-			})(set, cards, deferred_set);
-
-		}
-		Q.all(promises_sets).then(function () {
-			console.log('Importing DB finished!');
-			deferred.resolve();
+		cards = cards.map(function (card) {
+			if (!'releaseDate' in card) card.releaseDate = set.releaseDate;
+			return card;
 		});
-	});
 
-	return deferred.promise;
+		return Q.all([].concat(
+				Q.ninvoke(db.collection('sets'), 'insert', set),
+				Q.ninvoke(db.collection('cardsRaw'), 'insert', cards)
+			)).then(function () {
+				console.log('Imported set ' + set.name);
+			});
+	})).then(function () {
+		console.log('Importing DB finished!');
+	});
 }
 
 exports.preprocess.reduceNames = function () {
 
-	var deferred = Q.defer();
 
 	console.log('Reducing Names ...');
 
-	db.dropCollection('cardsNameReduced');
+	//db.collection('cards').drop();
 
 	var map = function () {
 		emit(this.name, this);
@@ -127,27 +122,23 @@ exports.preprocess.reduceNames = function () {
 			return reducedVal;
 	}
 
-	db.collection('cards').mapReduce(
-		map,
-		reduce,
-		{
-			out: "inline"
-		}, function (err, result) {
-			if (err) throw err;
-
-			result.find().toArray( function (err, cards) {
-				var promises = [];
-				for (var i in cards) {
-					var card = cards[i].value;
-					promises.push(Q.ninvoke(db.collection('cardsNameReduced'), 'insert', card));
-				}
-				Q.all(promises).then(function () {
-					console.log('Reducing Names ... finished');
-				}).done(deferred.resolve);
-			});
-		}
-	);
-	return deferred.promise;
+	return Q.ninvoke(db.collection('cardsRaw'), 'mapReduce',
+			map,
+			reduce,
+			{
+				out: "inline"
+			}
+		).then(function (res) {
+			return Q.ninvoke(res.find(), 'toArray');
+		})
+		.then(function (cards) {
+			//console.log(cards);
+			return Q.all(cards.map(function (card) {
+				return Q.ninvoke(db.collection('cards'), 'insert', card.value);
+			}));
+		}).then(function () {
+			console.log('Reducing Names ... finished');
+		});
 }
 
 exports.preprocess.nestDoubleFaced = function () {
@@ -178,9 +169,9 @@ exports.preprocess.nestDoubleFaced = function () {
 exports.preprocess.types = function () {
 	var deferred = Q.defer();
 
-	db.dropCollection('supertypes');
-	db.dropCollection('types');
-	db.dropCollection('subtypes');
+	//db.dropCollection('supertypes');
+	//db.dropCollection('types');
+	//db.dropCollection('subtypes');
 
 	var reduce = function (key, values) {
 		return values.reduce(function (a, b) {
@@ -263,3 +254,29 @@ exports.preprocess.types = function () {
 	);
 	return deferred.promise;
 }
+
+switch (argv._[0]) {
+	case 'all':
+
+		Q()
+			.then(Q.nbind(db.collection('sets').drop, db.collection('sets'))).then(Q, Q)
+			.then(Q.nbind(db.collection('cardsRaw').drop, db.collection('cardsRaw'))).then(Q, Q)
+			.then(exports.fetchDb)
+			.then(exports.loadDb)
+			.then(exports.preprocess.all)
+			.done(function () {
+				console.log('Import finished.');
+				process.exit();
+			});
+		break;
+	case 'preprocess':
+		Q()
+			.then(Q.nbind(db.collection('cards').drop, db.collection('cards'))).then(Q, Q)
+			.then(exports.preprocess.all)
+			.done(function () {
+				console.log('Preprocessing done.');
+				process.exit();
+			});
+		break;
+}
+
