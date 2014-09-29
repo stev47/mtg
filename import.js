@@ -33,7 +33,7 @@ exports.import = function (req, res) {
 exports.preprocess = {};
 exports.preprocess.all = function () {
 	return exports.preprocess.reduceNames()
-		.then(exports.preprocess.nestDoubleFaced);
+		.then(exports.preprocess.nestDoubleFaced)
 		.then(exports.preprocess.types);
 }
 
@@ -144,7 +144,9 @@ exports.preprocess.reduceNames = function () {
 exports.preprocess.nestDoubleFaced = function () {
 	var deferred = Q.defer();
 
-	db.collection('cardsNameReduced').find({
+	console.log('Nesting double-faced cards …');
+
+	db.collection('cards').find({
 		layout: 'double-faced'
 	}).toArray(function (err, cards) {
 		var promises = [];
@@ -152,13 +154,14 @@ exports.preprocess.nestDoubleFaced = function () {
 			var card = cards[i];
 			(function (card) {
 				var backside_name = card.names.filter(function (x) { return x != card.name })[0];
-				db.collection('cardsNameReduced').findOne({name: backside_name}, function (err, backside_card) {
+				db.collection('cards').findOne({name: backside_name}, function (err, backside_card) {
 					card.backside = backside_card;
-					promises.push(Q.ninvoke(db.collection('cardsNameReduced'), 'update', {_id: card._id}, card));
+					promises.push(Q.ninvoke(db.collection('cards'), 'update', {_id: card._id}, card));
 				});
 			})(card);
 		}
 
+		console.log('Nesting double-faced cards … finished');
 		//console.log(cards);
 		deferred.resolve();
 	});
@@ -187,7 +190,7 @@ exports.preprocess.types = function () {
 		})
 	}
 
-	db.collection('cardsNameReduced').mapReduce(
+	db.collection('cards').mapReduce(
 		function () { emit(0, this.supertypes) },
 		reduce,
 		{
@@ -209,7 +212,7 @@ exports.preprocess.types = function () {
 		}
 	);
 
-	db.collection('cardsNameReduced').mapReduce(
+	db.collection('cards').mapReduce(
 		function () { emit(0, this.types) },
 		reduce,
 		{
@@ -231,7 +234,7 @@ exports.preprocess.types = function () {
 		}
 	);
 
-	db.collection('cardsNameReduced').mapReduce(
+	db.collection('cards').mapReduce(
 		function () { emit(0, this.subtypes) },
 		reduce,
 		{
@@ -272,6 +275,9 @@ switch (argv._[0]) {
 	case 'preprocess':
 		Q()
 			.then(Q.nbind(db.collection('cards').drop, db.collection('cards'))).then(Q, Q)
+			.then(Q.nbind(db.collection('supertypes').drop, db.collection('supertypes'))).then(Q, Q)
+			.then(Q.nbind(db.collection('types').drop, db.collection('types'))).then(Q, Q)
+			.then(Q.nbind(db.collection('subtypes').drop, db.collection('subtypes'))).then(Q, Q)
 			.then(exports.preprocess.all)
 			.done(function () {
 				console.log('Preprocessing done.');

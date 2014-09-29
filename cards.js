@@ -2,22 +2,11 @@ var mongoskin = require('mongoskin');
 
 var db = new mongoskin.db('mongodb://localhost:27017/mtg', {w : 0});
 
-var admin = require('./admin');
 
 //mongo.MongoClient.connect("mongodb://localhost:27017/mtg", function (err, db) {
 
 console.log("Connected to database ?");
 
-
-exports.import = function (req, res) {
-	admin.fetchDb()
-		.then(admin.importDb)
-		//.then(function () { console.log('blabla!') })
-		.then(admin.preprocess.all)
-		.then(function () {
-			res.send('finished!');
-		});
-};
 
 exports.types = function (req, res) {
 	var col = db.collection('types');

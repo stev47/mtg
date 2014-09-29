@@ -2,8 +2,7 @@ var path = require('path'),
 	bodyParser = require('body-parser'),
 	Q = require('q'),
 	express = require('express'),
-	cards = require('./cards'),
-	admin = require('./admin');
+	cards = require('./cards');
 
 Q.longStackSupport = true;
 
