@@ -49,7 +49,8 @@ app.get('/print/*', function (req, res) {
 	Q.ninvoke(MongoClient, 'connect', "mongodb://localhost:27017/mtg").done(function (db) {
 
 
-		var card_names = decodeURIComponent(req.path.replace(/\/print\//, '')).split('/');
+		var card_names = decodeURIComponent(req.path.replace(/\/print\//, '')).split('/')
+			.map(function (s) { return s.trim(); });
 		console.log(card_names);
 
 		return Q.all(card_names.map(function (card_name) {
