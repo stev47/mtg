@@ -9,6 +9,18 @@ var fs = require('fs'),
 var argv = require('yargs')
         .argv;
 
+// Small wrapper utility for Q
+var QW = {};
+QW.sequence = function (jobs) {
+    var resArr = [];
+    var seq = Q();
+    jobs.forEach(function (job, i) {
+        seq = seq.then(job).then(function (res) {
+            resArr[i] = res;
+        });
+    });
+    return seq.then(() => resArr);
+}
 
 Q.nbind = function (fn, thisp) {
     var fnArgs = Array.prototype.slice.call(arguments).slice(2);
@@ -52,7 +64,8 @@ exports.fetchDb = function () {
     var deferred = Q.defer();
 
     console.log('Fetching json …');
-    exports.download("http://mtgjson.com/json/AllSets-x.json.zip", "data/cards.json.zip", function () {
+    exports.download("http://mtgjson.com/json/AllSets-x.json.zip", "data/cards.json.zip", function (err, res) {
+        if (err) throw err;
         var reader = fs.createReadStream("data/cards.json.zip");
         var writer = fs.createWriteStream("data/cards.json");
         reader.pipe(unzip.Parse()).on('entry', function (entry) {
@@ -80,26 +93,34 @@ exports.loadDb = function () {
     console.log('Loading json …')
     var sets = require('./data/cards.json');
 
+    var fns = []
+    for (var setname in sets) {
 
-    return Q.all(Object.keys(sets).map(function (setname) {
         var set = extend({}, sets[setname]);
         delete set.cards;
         var cards = sets[setname].cards;
 
         cards = cards.map(function (card) {
             if (!'releaseDate' in card) card.releaseDate = set.releaseDate;
+            if (set.magicCardsInfoCode && card.number)
+                card.imgUrl = "http://magiccards.info/scans/en/" + set.magicCardsInfoCode + "/" + card.number + ".jpg";
             return card;
         });
 
-        return Q.all([].concat(
-            Q.ninvoke(db.collection('sets'), 'insert', set),
-            Q.ninvoke(db.collection('cardsRaw'), 'insert', cards)
-        )).then(function () {
-            console.log('Imported set ' + set.name);
-        });
-    })).then(function () {
+        fns.push((function(set, cards) {
+            return QW.sequence([
+                Q.nbind(db.collection('sets').insert, db.collection('sets'), set),
+                Q.nbind(db.collection('cardsRaw').insert, db.collection('cardsRaw'), cards),
+                function () {
+                    console.log('Imported set ' + set.name);
+                },
+            ]);
+        }).bind(null, set, cards));
+    }
+    return QW.sequence(fns).then(function () {
         console.log('Importing DB finished!');
     });
+
 }
 
 exports.preprocess.reduceNames = function () {
@@ -259,6 +280,14 @@ exports.preprocess.types = function () {
 }
 
 switch (argv._[0]) {
+    case 'fetch':
+        Q()
+            .then(exports.fetchDb)
+            .done(function () {
+                console.log('Fetch finished.');
+                process.exit();
+            });
+        break;
     case 'all':
 
         Q()
@@ -268,7 +297,7 @@ switch (argv._[0]) {
             .then(Q.nbind(db.collection('supertypes').drop, db.collection('supertypes'))).then(Q, Q)
             .then(Q.nbind(db.collection('types').drop, db.collection('types'))).then(Q, Q)
             .then(Q.nbind(db.collection('subtypes').drop, db.collection('subtypes'))).then(Q, Q)
-            .then(exports.fetchDb)
+            //.then(exports.fetchDb)
             .then(exports.loadDb)
             .then(exports.preprocess.all)
             .done(function () {

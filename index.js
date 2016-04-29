@@ -28,21 +28,9 @@ app.get('/', function (req, res) {
 app.get('/print/*', function (req, res) {
 
 	function getImageUrl(card) {
-		return "http://mtgimage.com/card/" + encodeURIComponent(card.imageName) + ".jpg";
-	}
-	function loadSuccess() {
-		var img = this;
-		if (img.naturalWidth == 480 && img.naturalHeight == 680) {
-			$(img).addClass("clip-border-1");
-		} else if (img.naturalWidth == 223 && img.naturalHeight == 310) {
-			$(img).addClass("clip-border-2");
-		}
-		$(img).removeClass('loading');
-	}
-
-	function loadError() {
-		var img = this;
-		$(img).css("background", "#900");
+		//return "http://mtgimage.com/card/" + encodeURIComponent(card.imageName) + ".jpg";
+		//return "https://api.mtgdb.info/content/hi_res_card_images/" + encodeURIComponent(card.multiverseid) + ".jpg";
+		return card.imgUrl;
 	}
 
 	var MongoClient = require('mongodb').MongoClient;
@@ -96,6 +84,8 @@ app.get('/preprocess/types', function (req, res) {
 */
 app.post('/query', cards.findByName);
 
+app.get('/supertypes', cards.supertypes);
 app.get('/types', cards.types);
+app.get('/subtypes', cards.subtypes);
 
 app.listen(3000);

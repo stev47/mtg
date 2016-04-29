@@ -1,4 +1,6 @@
 var mongoskin = require('mongoskin');
+var Q = require('q');
+var mci = require('./magiccardsinfo.js');
 
 var db = new mongoskin.db('mongodb://localhost:27017/mtg', {w : 0});
 
@@ -20,20 +22,35 @@ exports.types = function (req, res) {
 	});
 }
 
+exports.supertypes = function (req, res) {
+	db.collection('supertypes').find().sort({name: 1}).toArray(function (err, results) {
+		if (err) throw err;
+		res.send(results);
+	});
+}
+
+exports.subtypes = function (req, res) {
+	db.collection('subtypes').find().sort({name: 1}).toArray(function (err, results) {
+		if (err) throw err;
+		res.send(results);
+	});
+}
+
 exports.findAll = function (req, res) {
 	res.send('Alle');
 };
 
 exports.findByName = function (req, res) {
 
-	var limit = req.body.limit ? req.body.limit : 50;
+	var limit = req.body.limit ? req.body.limit : 100;
 	var qparams = req.body;
 	var query = {};
 
 	var col = db.collection('cards');
 
 	/* Query Building */
-	query.layout = { $nin : ['scheme', 'phenomenom', 'vanguard', 'plane'] };
+	query.layout = { $nin : ['scheme', 'phenomenon', 'vanguard', 'plane'] };
+	query.legalities = { format: 'Legacy', legality: 'Legal' };
 
 	if (qparams.name)
 		query.name = { $regex: qparams.name, $options: 'i' };
@@ -41,6 +58,10 @@ exports.findByName = function (req, res) {
 		query.text = { $regex: qparams.text, $options: 'i' };
 	if (qparams.type)
 		query.types = qparams.type;
+	if (qparams.subtype)
+		query.subtypes = qparams.subtype;
+	if (qparams.cmc && qparams.cmc != -1)
+		query.cmc = parseInt(qparams.cmc);
 
 	qcolors = [];
 	['white', 'blue', 'black', 'red', 'green'].forEach(function (color) {
@@ -60,7 +81,23 @@ exports.findByName = function (req, res) {
 
 	col.toArray(function (err, results) {
 		if (err) throw err;
-		res.send(results);
+
+		var urlUpdates = [];
+
+		results.forEach(function(card) {
+			// todo: actually check for valid url?
+			if (card.imgUrl)
+				return
+
+			urlUpdates.push(mci.getImgUrl(card.name).then(function (url) {
+				card.imgUrl = url
+				return Q.ninvoke(db.collection('cards'), 'update', {_id: card._id}, card)
+			}))
+		});
+
+		Q.all(urlUpdates).then(function () {
+			res.send(results);
+		});
 	});
 
 };

@@ -5,7 +5,7 @@
 $lpanel-width: 20%;
 $card-width: 63mm;
 $card-height: 88mm;
-$card-border: 1mm;
+$card-border: 2mm;
 
 $card-ratio: $card-width / $card-height;
 $card-view-width: $card-width / (2 * $card-border);
@@ -81,7 +81,7 @@ div#wheel {
 }
 
 .loading {
-	visibility: hidden;
+	//visibility: hidden;
 }
 
 @mixin clip-borders ($img-width, $img-height, $top, $right, $bottom, $left) {
@@ -103,6 +103,12 @@ div#wheel {
 }
 .card img.clip-border-2 { // 223x310 lq gatherer
 	@include clip-borders(223px, 310px, 12px, 12px, 13px, 11px);
+}
+.card img.clip-border-3 { // 480x660 mtg online
+	@include clip-borders(480px, 660px, 10px, 10px, 10px, 10px);
+}
+.card img.clip-border-4 { // 265x370 ???
+	@include clip-borders(265px, 370px, 12px, 10px, 10px, 10px);
 }
 
 

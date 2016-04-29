@@ -43,12 +43,14 @@ function show_result() {
 
 		var card_el = $('<figure>')
 			.data(card_data)
+			.attr('title', card_data.name)
 			.addClass('card')
 
 		var card_view_el = $('<div>')
 			.data('toggle', 0)
 			.addClass('card-view')
 			.appendTo(card_el);
+
 		var card_front_el = $('<img>').appendTo(card_view_el);
 		var card_back_el = $('<img>');
 
@@ -61,7 +63,7 @@ function show_result() {
 			.addClass('loading')
 			//.css('background-image', 'url(' + getImageUrl(card_data) + ')')
 			.attr('src', getImageUrl(card_data))
-			.attr('alt', card_data.name)
+			.attr('alt', JSON.stringify(card_data))
 			.addClass('front')
 
 		// on double-faced cards: feed backside with information
@@ -69,7 +71,7 @@ function show_result() {
 			card_back_el
 				.data(card_data.backside)
 				.addClass('loading')
-				.attr('src', 'http://mtgimage.com/card/' + card_data.backside.imageName + '.jpg')
+				.attr('src', getImageUrl(card_data.backside))
 				.attr('alt', card_data.backside.name)
 				.addClass('back')
 				.appendTo(card_view_el)
@@ -98,6 +100,12 @@ $(function () {
 
 	$.getJSON('types', function (data) {
 		var types_el = $('select[name=type]');
+		$.each(data, function (i, v) {
+			$('<option>').text(v.name).appendTo(types_el);
+		});
+	})
+	$.getJSON('subtypes', function (data) {
+		var types_el = $('select[name=subtype]');
 		$.each(data, function (i, v) {
 			$('<option>').text(v.name).appendTo(types_el);
 		});
